@@ -33,6 +33,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import { Logout } from "@/app/(auth)/(routes)/sign-out";
 const Setting = () => {
   const { setTheme } = useTheme();
   return (
@@ -62,28 +63,7 @@ const Setting = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Logout</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to logout? You will need to log back
-                    in to continue using our services.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-black text-white">
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction className="bg-red-500 text-white">
-                    <Link href="/sign-in">Logout</Link>
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Logout />
             <Button className="ml-auto">Save Profile</Button>
           </CardFooter>
         </Card>

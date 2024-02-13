@@ -1,32 +1,32 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { CardTitle, CardHeader, CardContent, Card } from "@/components/ui/card";
+import { changestatus, getAllStaff, useAuthToken } from "@/app/api/route";
+import DetailsUser from "@/components/admin/DetailsUser";
 import {
-  TableHead,
-  TableRow,
-  TableHeader,
-  TableCell,
-  TableBody,
-  Table,
-} from "@/components/ui/table";
-import {
-  AlertDialogTrigger,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogContent,
   AlertDialog,
-  AlertDialogCancel,
   AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Staff } from "@/model/model";
-import DetailsUser from "@/components/admin/DetailsUser";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 function ArrowRightIcon(props: any) {
   return (
@@ -48,14 +48,18 @@ function ArrowRightIcon(props: any) {
   );
 }
 
+
 const Staff = () => {
+
+  const token = useAuthToken() as string;
+  const header = `${token}`;
 
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const navigate = useRouter();
 
-  const fetchStaffs = async () => {
+  const fetcher = async () => {
     try {
-      const response = await axios.get("/api/user/admin/user/staff");
+      const response = await getAllStaff(token);
       // console.log('fetch respone', response.data);
       setStaffs(response.data);
     } catch (error) {
@@ -65,15 +69,16 @@ const Staff = () => {
   const onChangeStatus = async (id: string) => {
     try {
       console.log('id', id)
-      const response = await axios.put(`/api/user/admin/user/staff/changestatus`, { id });
-      console.log('change status respone', response.data);
-      fetchStaffs();
+      console.log('header', header)
+      await changestatus(`staff/${id}`, header);
+      // console.log('change status respone', response.data);
+      fetcher();
     } catch (error) {
-      console.error("Error fetching Staffs:", error);
+      console.error("Error fetching patients:", error);
     }
   }
   useEffect(() => {
-    fetchStaffs();
+    fetcher();
   }, []);
 
 

@@ -1,11 +1,15 @@
 "use client";
+import { login } from "@/app/api/route";
+import { Button } from "@/components/ui/button";
 import {
-  CardTitle,
+  Card,
+  CardContent,
   CardDescription,
   CardHeader,
-  CardContent,
-  Card,
+  CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -14,19 +18,15 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import Link from "next/link";
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { setCredentials } from "@/redux/feature/authSlice";
-import { useRouter } from "next/navigation";
-import { AppDispatch, RootState } from "@/redux/store";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import { useToast } from "@/components/ui/use-toast";
+} from "@/components/ui/select";
 import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
+import { setCredentials } from "@/redux/feature/authSlice";
+import { AppDispatch, RootState } from "@/redux/store";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const SignInPage = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -41,36 +41,58 @@ const SignInPage = () => {
 
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-
+  
   const onLogin = async () => {
     try {
-      console.log("Login user : ", user);
       setLoading(true);
-      const response = await axios.post("/api/auth/login", user);
-      console.log("Login success");
-      console.log("User : ", response.data.data);
+      console.log(user)
+
+      const response = await login(user);
+      console.log("response : ", response.data);
+      console.log("User : ", response.data);
       console.log("token : ", response.data.accessToken);
 
-      // toast({
-      //   title: "Success.",
-      //   description: "Login successful",
-      // });
+      toast({
+        variant: "success",
+        title: "Success.",
+        description: "Login successful",
+      });
       dispatch(
         setCredentials({
           user: response.data.data,
           accessToken: response.data.accessToken,
         })
       );
+      document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
+
       const url = `/${user.role.toLowerCase()}/dashboard`;
       navigate.push(url);
     } catch (error: any) {
-      console.log("Login faileddd", error.message);
-      // toast({
-      //   variant: "destructive",
-      //   title: "Uh oh! Something went wrong.",
-      //   description: "There was a problem with your request.",
-      //   action: <ToastAction altText="Try again">Try again</ToastAction>,
-      // });
+      console.log("error : ", error.response)
+      if(error.response.status === 400){
+        toast({
+          variant: user.phoneNumber.length > 0 && user.password.length > 0 ? "destructive" : "default",
+          title: "Uh oh! Something went wrong.",
+          description: user.phoneNumber.length > 0 && user.password.length > 0 ? "Invalid phone number or password" : "Please fill in the form",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+      if(error.response.status === 500){
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request.",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+      if(error.response.status === 404){
+        toast({
+          variant: "yellow",
+          title: "Uh oh! Something went wrong.",
+          description: "User not found",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
     } finally {
       setLoading(false);
     }

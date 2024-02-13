@@ -1,32 +1,40 @@
 "use client";
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Drug } from "@/model/model";
-import axios from "axios";
-import { CardTitle, CardHeader, CardContent, Card, CardFooter } from "@/components/ui/card"
-import { CarouselItem, CarouselContent, CarouselPrevious, CarouselNext, Carousel } from "@/components/ui/carousel"
-import { Badge } from "@/components/ui/badge";
+import { changeStatusDrug, getDrugAvailable, getDrugUnavailable } from "@/app/api/route";
 import {
-  AlertDialogTrigger,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogContent,
   AlertDialog,
-  AlertDialogCancel,
   AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Drug } from "@/model/model";
+import { RootState } from "@/redux/store";
+import Image from "next/image";
+import React from "react";
+import { useSelector } from "react-redux";
+
+const useAuthToken = () => {
+  const { valueAuth } = useSelector((state: RootState) => state.auth);
+  return valueAuth.token;
+};
+
 const Drugs = () => {
 
+  const token = useAuthToken() as string;
+  
   const [drugs, setDrugs] = React.useState<Drug[]>([]);
   const [drugsDeleted, setDrugDeleted] = React.useState<Drug[]>([]);
 
   const fetchDrugs = async () => {
     try {
-      const response = await axios.get("/api/user/admin/drug/available");
+      const response = await getDrugAvailable();
       console.log('fetch respone', response.data);
       setDrugs(response.data);
     } catch (error) {
@@ -37,7 +45,7 @@ const Drugs = () => {
 
   const fetchDeleteDrugs = async () => {
     try {
-      const response = await axios.get(`/api/user/admin/drug/unavailable`);
+      const response = await getDrugUnavailable(token);
       console.log('delete respone', response.data);
       setDrugDeleted(response.data);
     } catch (error) {
@@ -48,8 +56,8 @@ const Drugs = () => {
   const onChangeStatus = async (id: string) => {
     try {
       console.log('id', id)
-      const response = await axios.put(`/api/user/admin/drug/changestatus`, { id });
-      console.log('change status respone', response.data);
+      const response = await changeStatusDrug(`${id}`, token);
+      // console.log('change status respone', response.data);
       fetchDrugs();
       fetchDeleteDrugs();
     } catch (error) {
@@ -363,8 +371,8 @@ const Drugs = () => {
       </div>
 
       {/* delete */}
-
-      <div className="container grid gap-6 md:gap-8 px-4 md:px-6 max-w-xl mx-auto lg:max-w-none my-5">
+      {
+        drugsDeleted.length > 0  ? (<div className="container grid gap-6 md:gap-8 px-4 md:px-6 max-w-xl mx-auto lg:max-w-none my-5">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8">
           <div className="grid gap-1">
             <h1 className="text-2xl font-bold tracking-tight">
@@ -463,7 +471,8 @@ const Drugs = () => {
           <CarouselPrevious />
           <CarouselNext />
         </Carousel>
-      </div>
+      </div>) : ("")
+      }
     </section>
   );
 };

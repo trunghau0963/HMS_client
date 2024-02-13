@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ReduxProvider } from "@/redux/provider";
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
             >
               {children}
             </ThemeProvider>
+            <Toaster />
           </ReduxProvider>
         </body>
       </html>

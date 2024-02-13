@@ -1,11 +1,13 @@
-export type Patient = {
+export interface Patient {
     id: string;
-    userName: string;
     email: string;
     phoneNumber: string;
-    userAddress: string;
-    dob: Date;
+    password: string;
+    userName: string;
+    dob: string | null;
+    userAddress: string | null;
     islock: boolean;
+    refreshToken: string | null;
 }
 
 export type Dentist = {
@@ -54,19 +56,21 @@ export type Appointment = {
     patient: Patient;
 }
 
-export type Record = {
+export interface Record {
     id: string;
     idPatient: string;
     idDentist: string;
+    dateOfAppointment: string;
     timeOfAppointment: string;
-    dateOfAppointment: Date;
     total: number;
     diagnose: string;
     symptom: string;
+    prescriptions: Prescription[];
+    serviceIndicators: any[];
     patient: Patient;
 }
 
-export type Prescription = {
+export interface Prescription {
     idRecord: string;
     idBatch: string;
     idDrug: string;
@@ -80,4 +84,11 @@ export type ServiceIndicator = {
     idService: string;
     quantity: number;
     total: number;
+}
+
+export type Service = {
+    id: string;
+    serviceName: string;
+    price: number;
+    isDelete: boolean;
 }

@@ -30,8 +30,10 @@ import Autoplay from "embla-carousel-autoplay"
 import { Dentist, Drug, Schedule } from "@/model/model"
 import axios from "axios"
 import { Badge } from "lucide-react"
+import { getAllDentist, getDrug, getDrugAvailable, getSchedule, getScheduleById, useAuthToken } from "@/app/api/route"
 
-export default function Component() {
+export default function Dashboard() {
+  const token = useAuthToken() as string;
   const [api, setApi] = React.useState<CarouselApi>()
   const [dentist, setDentist] = React.useState<Dentist[]>([]);
   const [current, setCurrent] = React.useState(0)
@@ -43,7 +45,7 @@ export default function Component() {
 
   const fetchDrugs = async () => {
     try {
-      const response = await axios.get("/api/user/patient/drug");
+      const response = await getDrugAvailable();
       // console.log('fetch drug respone', response.data);
       setDrugs(response.data);
     } catch (error) {
@@ -53,7 +55,7 @@ export default function Component() {
 
   const fetchDentist = async () => {
     try {
-      const response = await axios.get("/api/user/patient/dentist");
+      const response = await getAllDentist();
       // console.log('fetch dentist respone', response.data);
       setDentist(response.data);
     } catch (error) {
@@ -64,7 +66,7 @@ export default function Component() {
   const onGetSchedule = async ({ id }: { id: string }) => {
     try {
       console.log('dentist id', id);
-      const response = await axios.get(`http://localhost:5000/patient/schedule-dentist/${id}`);
+      const response = await getScheduleById(id,token);
       console.log('fetch schedule respone', response.data);
       setSchedule(response.data);
     } catch (error) {
@@ -245,7 +247,7 @@ export default function Component() {
                                       <p className="text-lg font-bold">{schedule.dateOfAppointment.toString().split("T")[0]}</p>
                                       <p className="text-gray-500">{schedule.timeOfAppointment.toString().split("T")[1].split(".")[0]}</p>
                                     </div>
-                                    <a href="https://braydoncoyer.dev/blog/tailwind-gradients-how-to-make-a-glowing-gradient-background" className="block text-indigo-400 group-hover:text-slate-800 transition duration-200" target="_blank">Book This Appointment →</a>
+                                    <a href={`http://localhost:5432/patient/appointments/${schedule.idDentist}/${schedule.dateOfAppointment}/${schedule.timeOfAppointment}`} className="block text-indigo-400 group-hover:text-slate-800 transition duration-200" target="_blank">Book This Appointment →</a>
                                   </div>
                                 </div>
                               </div>
@@ -253,7 +255,7 @@ export default function Component() {
                           )
                           ) : <p className="text-center">No Schedule</p>}
                         </AlertDialogDescription>
-                        <hr />
+                        <hr />  
                         <AlertDialogFooter>
                           <AlertDialogCancel className="bg-black text-white">
                             Cancel

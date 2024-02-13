@@ -1,6 +1,9 @@
 "use client";
-import React from 'react'
-import { CardHeader, CardContent, Card } from "@/components/ui/card";
+import { signUp } from '@/app/api/route';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -9,15 +12,12 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { useToast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+} from "@/components/ui/select";
 import { ToastAction } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
+import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
 const SignUpPage = () => {
   const { toast } = useToast();
@@ -37,21 +37,23 @@ const SignUpPage = () => {
     try {
       setLoading(true);
       console.log("User : ", user);
-      const response = await axios.post("http://localhost:5000/auth/signup", user);
+      const response = await signUp(user);
       toast({
+        variant: "success",
         title: "Success",
         description: "Sign up successful",
       });
       console.log("Signup success", response.data);
       navigate.push("/sign-in");
     } catch (error: any) {
-      console.log("Signup failed", error.message);
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: error.message,
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      });
+      if(error.response.status === 400){
+        toast({
+          variant: user.phoneNumber.length > 0 && user.password.length > 0 ? "destructive" : "default",
+          title: "Uh oh! Something went wrong.",
+          description: user.phoneNumber.length > 0 && user.password.length > 0 ? "Bad request" : "Please fill in the form",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
     } finally {
       setLoading(false);
     }

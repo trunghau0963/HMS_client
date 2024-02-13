@@ -1,6 +1,14 @@
 import { ToolItemsProps } from "./config/model";
 export const MAX_FREE_COUNT = 5;
 
+export const server_url = process.env.SERVER_URL;
+export const api_root = process.env.API_ROOT;
+
+export const jwtConstants = {
+  access: "ACCESS_TOKEN_KEY",
+  refresh: "REFRESH_TOKEN_KEY",
+};
+
 export const THEME_MODES = [
   {
     label: "Light",
