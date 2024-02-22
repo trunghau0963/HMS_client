@@ -134,14 +134,14 @@ export default function Appointment() {
                     value={time.toString().split("T")[1].split(".")[0]}
                   />
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="symptom">Symptom</Label>
                   <Input id="symptom" required type="symptom" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="diagnostic">Diagnostic</Label>
                   <Input id="diagnostic" required type="diagnostic" />
-                </div>
+                </div> */}
               </div>
               <Button className="w-full" type="submit" onClick={() => {postAppointment()}}>
                 Book appointment

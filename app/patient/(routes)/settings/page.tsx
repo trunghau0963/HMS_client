@@ -40,6 +40,8 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { onLogOut } from "@/controller/sign-out";
+import { Logout } from "@/app/(auth)/(routes)/sign-out";
 
 const Setting = () => {
   const { setTheme } = useTheme();
@@ -48,25 +50,26 @@ const Setting = () => {
   const navigate = useRouter();
 
 
-  const onLogOut = async () => {
-    try {
-      const respone = await axios.get("/api/auth/logout");
-      console.log("Logout success", respone);
-      toast({
-        variant: "destructive",
-        title: "Success.",
-        description: "Logout successful",
-      });
-      dispatch(setCredentials({ user: null, accessToken: null }));
-      navigate.push("/sign-in");
-    } catch (error: any) {
-      console.log(error.message);
-      toast({
-        title: "Error.",
-        description: error.message,
-      });
-    }
-  }
+  // const onLogOut = async () => {
+  //   try {
+  //     const respone = await axios.get("/api/auth/logout");
+  //     console.log("Logout success", respone);
+  //     toast({
+  //       variant: "success",
+  //       title: "Success.",
+  //       description: "Logout successful",
+  //     });
+  //     dispatch(setCredentials({ user: null, accessToken: null }));
+  //     navigate.push("/sign-in");
+  //   } catch (error: any) {
+  //     console.log(error.message);
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Error.",
+  //       description: error.message,
+  //     });
+  //   }
+  // }
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
@@ -94,28 +97,7 @@ const Setting = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Logout</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to logout? You will need to log back
-                    in to continue using our services.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-black text-white">
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction className="bg-red-500 text-white" onClick={onLogOut}>
-                    Logout
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Logout />
             <Button className="ml-auto">Save Profile</Button>
           </CardFooter>
         </Card>

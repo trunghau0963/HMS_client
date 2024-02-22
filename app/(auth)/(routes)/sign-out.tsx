@@ -1,4 +1,5 @@
-"use client"
+"use client";
+import { logOut } from "@/app/api/route";
 import {
   AlertDialogTrigger,
   AlertDialogTitle,
@@ -19,32 +20,35 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 
+export function logOutFunc(dispatch: AppDispatch, navigate: any) {
+  localStorage.setItem("refreshToken", "");
+  dispatch(setCredentials({ user: null, accessToken: null }));
+  navigate.push("/sign-in");
+}
+
 export const Logout = () => {
-    const dispatch: AppDispatch = useDispatch();
-    const { toast } = useToast();
-    const navigate = useRouter();
-  
-  
-    const onLogOut = async () => {
-      try {
-        const respone = await axios.get("/api/auth/logout");
-        console.log("Logout success", respone);
-        toast({
-          variant: "success",
-          title: "Success.",
-          description: "Logout successful",
-        });
-        dispatch(setCredentials({ user: null, accessToken: null }));
-        navigate.push("/sign-in");
-      } catch (error: any) {
-        console.log(error.message);
-        toast({
-          variant: "destructive",
-          title: "Error.",
-          description: error.message,
-        });
-      }
+  const dispatch: AppDispatch = useDispatch();
+  const { toast } = useToast();
+  const navigate = useRouter();
+
+  const onLogOut = async () => {
+    try {
+      toast({
+        variant: "success",
+        title: "Success.",
+        description: "Logout successful",
+      });
+      // logOut(dispatch, navigate, setCredentials);
+      logOutFunc(dispatch, navigate);
+    } catch (error: any) {
+      console.log(error.message);
+      toast({
+        variant: "destructive",
+        title: "Error.",
+        description: error.message,
+      });
     }
+  };
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>

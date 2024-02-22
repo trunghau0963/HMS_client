@@ -30,7 +30,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 const SignInPage = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { valueAuth } = useSelector((state: RootState) => state.auth);
   const { toast } = useToast();
   const [user, setUser] = React.useState({
     phoneNumber: "",
@@ -63,7 +62,7 @@ const SignInPage = () => {
           accessToken: response.data.accessToken,
         })
       );
-      document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
+      localStorage.setItem('refreshToken', response.data.refreshToken);
 
       const url = `/${user.role.toLowerCase()}/dashboard`;
       navigate.push(url);
@@ -74,6 +73,14 @@ const SignInPage = () => {
           variant: user.phoneNumber.length > 0 && user.password.length > 0 ? "destructive" : "default",
           title: "Uh oh! Something went wrong.",
           description: user.phoneNumber.length > 0 && user.password.length > 0 ? "Invalid phone number or password" : "Please fill in the form",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
+      }
+      if(error.response.status === 401){
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "User is locked",
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }

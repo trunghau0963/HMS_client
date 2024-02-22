@@ -33,12 +33,24 @@ export const verifyToken = async (token: string) => {
   return respone.data;
 };
 
+export const refreshToken = async (data: any) => {
+  return await instancesApi.post(`${AuthRoutes.REFRESH}`, data);
+  // console.log("refreshToken", respone);
+  // return respone;
+};
+
 export const signUp = async (user: any) => {
   return await instancesApi.post(`${AuthRoutes.REGISTER}`, user);
 };
 
 export const login = async (user: any) => {
   return await instancesApi.post(`${AuthRoutes.LOGIN}`, user);
+};
+
+export const logOut = (dispatch: any, navigate: any, setCredentials: any) => {
+  localStorage.setItem("refreshToken", "");
+  dispatch(setCredentials({ user: null, accessToken: null }));
+  navigate.push("/sign-in");
 };
 
 export const getAllPatient = async (token: string) => {
@@ -53,9 +65,8 @@ export const getAllNameOfPatient = async (token: string) => {
   });
 };
 
-export const getPatientById = async (id: string, token : string) => {
-  return await instancesApi.get(`${UserRoutes.PATIENT}/${id}`,
-  {
+export const getPatientById = async (id: string, token: string) => {
+  return await instancesApi.get(`${UserRoutes.PATIENT}/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
@@ -299,7 +310,10 @@ export const addServiceIndicator = async (
   );
 };
 
-export const deleteServiceInServiceIndicator = async (data: any, token: string) => {
+export const deleteServiceInServiceIndicator = async (
+  data: any,
+  token: string
+) => {
   return await instancesApi.delete(
     `${RecordRoutes.DELETE_SERVICES}/${data.idRecord}/${data.idService}`,
     {

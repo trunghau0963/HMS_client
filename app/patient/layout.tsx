@@ -29,11 +29,11 @@ const NAVIGATIONS: ToolItemsProps[] = [
     icon: "/icons/dentist.svg",
     url: "/dentist",
   },
-  {
-    title: "Appointments",
-    icon: "/icons/appointment.svg",
-    url: "/appointments",
-  },
+  // {
+  //   title: "Appointments",
+  //   icon: "/icons/appointment.svg",
+  //   url: "/appointments",
+  // },
   {
     title: "invoices",
     icon: "/icons/invoice.svg",
@@ -67,11 +67,11 @@ const NAVIGATIONS_LIGHT: ToolItemsProps[] = [
     icon: "/icons/dentist.svg",
     url: "/dentist",
   },
-  {
-    title: "Appointments",
-    icon: "/icons/appointment.svg",
-    url: "/appointments",
-  },
+  // {
+  //   title: "Appointments",
+  //   icon: "/icons/appointment.svg",
+  //   url: "/appointments",
+  // },
   {
     title: "invoices",
     icon: "/icons/invoice.svg",

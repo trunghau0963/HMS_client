@@ -1,5 +1,11 @@
 "use client";
-import { changestatus, getAllPatient, useAuthToken } from "@/app/api/route";
+import {
+  changestatus,
+  getAllPatient,
+  logOut,
+  refreshToken,
+  useAuthToken,
+} from "@/app/api/route";
 import DetailsUser from "@/components/admin/DetailsUser";
 import {
   AlertDialog,
@@ -26,6 +32,14 @@ import {
 import { Patient } from "@/model/model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
+import { setCredentials } from "@/redux/feature/authSlice";
+import { AppDispatch, RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+// import { logOutFunc } from "@/app/(auth)/(routes)/sign-out";
+import { logOutFunc } from "@/app/(auth)/(routes)/sign-out";
 
 function ArrowRightIcon(props: any) {
   return (
@@ -48,33 +62,93 @@ function ArrowRightIcon(props: any) {
 }
 
 const Patient = () => {
-
+  const { toast } = useToast();
+  const navigate = useRouter();
   const token = useAuthToken() as string;
   const header = `${token}`;
   const [patients, setPatients] = useState<Patient[]>([]);
+  const dispatch: AppDispatch = useDispatch();
 
-  console.log('header', header);
+  console.log("header", header);
 
   const fetcher = async () => {
     try {
       const response = await getAllPatient(header);
       setPatients(response.data);
-    } catch (error) {
-      console.error("Error fetching patients:", error);
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        try {
+          const data = {
+            refreshToken: localStorage.getItem("refreshToken"),
+            role: "Admin",
+          };
+          const response = await refreshToken(data);
+          dispatch(
+            setCredentials({
+              user: response.data.data,
+              accessToken: response.data.newAccessToken,
+            })
+          );
+          localStorage.setItem("refreshToken", response.data.newRefreshToken);
+        } catch (error: any) {
+          if (
+            error.response.status === 403 ||
+            error.response.status === 404 ||
+            error.response.status === 409
+          ) {
+            toast({
+              variant: "destructive",
+              title: "Uh oh! Something went wrong.",
+              description: "Unauthorized - Token is invalid or expired",
+              action: <ToastAction altText="Try again">Try again</ToastAction>,
+            });
+            logOutFunc(dispatch, navigate);
+          }
+        }
+      }
     }
   };
 
   const onChangeStatus = async (id: string) => {
     try {
-      console.log('id', id)
-      console.log('header', header)
+      console.log("id", id);
+      console.log("header", header);
       await changestatus(`patient/${id}`, header);
       // console.log('change status respone', response.data);
       fetcher();
-    } catch (error) {
-      console.error("Error fetching patients:", error);
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        try {
+          const data = {
+            refreshToken: localStorage.getItem("refreshToken"),
+            role: "Admin",
+          };
+          const response = await refreshToken(data);
+          dispatch(
+            setCredentials({
+              user: response.data.data,
+              accessToken: response.data.newAccessToken,
+            })
+          );
+          localStorage.setItem("refreshToken", response.data.newRefreshToken);
+        } catch (error: any) {
+          if (
+            error.response.status === 403 ||
+            error.response.status === 404 ||
+            error.response.status === 409
+          ) {
+            toast({
+              variant: "destructive",
+              title: "Uh oh! Something went wrong.",
+              description: "Unauthorized - Token is invalid or expired",
+              action: <ToastAction altText="Try again">Try again</ToastAction>,
+            });
+            logOutFunc(dispatch, navigate);
+          }
+        }
+      }
     }
-  }
+  };
 
   useEffect(() => {
     fetcher();
@@ -82,8 +156,7 @@ const Patient = () => {
 
   // fetcher();
 
-
-  console.log('patients', patients)
+  console.log("patients", patients);
   return (
     <div>
       <main className="flex flex-col gap-4 p-4 md:p-6">
@@ -104,55 +177,81 @@ const Patient = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {
-                  patients.map((patient: Patient, idx: number) => (
-                    <TableRow className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <TableCell>{idx + 1}</TableCell>
-                      <TableCell>
-                        <Link href="#">{patient.id}</Link>
-                      </TableCell>
-                      <TableCell>{patient.userName}</TableCell>
-                      <TableCell>{`+84 ${patient.phoneNumber.slice(1, 3)} ${patient.phoneNumber.slice(3, 6)} ${patient.phoneNumber.slice(6)}`}</TableCell>
-                      <TableCell>
-                        {
-                          patient.islock ? <Badge onClick={() => onChangeStatus(patient.id)} className="bg-red-500 text-white">Lock</Badge> : <Badge onClick={() => onChangeStatus(patient.id)} className="bg-green-500 text-white">Active</Badge>
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="icon" variant="ghost">
-                              <ArrowRightIcon className="w-4 h-4" />
-                              <span className="sr-only">Details</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-center">User Information</AlertDialogTitle>
-                            </AlertDialogHeader>
-                            <hr />
-                            <AlertDialogDescription>
-                              <DetailsUser user={patient} />
-                            </AlertDialogDescription>
-                            <hr />
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="bg-black text-white">
-                                Close
-                              </AlertDialogCancel>
-                              {patient.islock ? (
-                                <AlertDialogAction className="bg-yellow-500 text-white" onClick={() => onChangeStatus(patient.id)}>
-                                  Enable
-                                </AlertDialogAction>
-                              ) : (<AlertDialogAction className="bg-red-500 text-white" onClick={() => onChangeStatus(patient.id)}>
+                {patients.map((patient: Patient, idx: number) => (
+                  <TableRow className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>
+                      <Link href="#">{patient.id}</Link>
+                    </TableCell>
+                    <TableCell>{patient.userName}</TableCell>
+                    <TableCell>{`+84 ${patient.phoneNumber.slice(
+                      1,
+                      3
+                    )} ${patient.phoneNumber.slice(
+                      3,
+                      6
+                    )} ${patient.phoneNumber.slice(6)}`}</TableCell>
+                    <TableCell>
+                      {patient.islock ? (
+                        <Badge
+                          onClick={() => onChangeStatus(patient.id)}
+                          className="bg-red-500 text-white"
+                        >
+                          Lock
+                        </Badge>
+                      ) : (
+                        <Badge
+                          onClick={() => onChangeStatus(patient.id)}
+                          className="bg-green-500 text-white"
+                        >
+                          Active
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <ArrowRightIcon className="w-4 h-4" />
+                            <span className="sr-only">Details</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-center">
+                              User Information
+                            </AlertDialogTitle>
+                          </AlertDialogHeader>
+                          <hr />
+                          <AlertDialogDescription>
+                            <DetailsUser user={patient} />
+                          </AlertDialogDescription>
+                          <hr />
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-black text-white">
+                              Close
+                            </AlertDialogCancel>
+                            {patient.islock ? (
+                              <AlertDialogAction
+                                className="bg-yellow-500 text-white"
+                                onClick={() => onChangeStatus(patient.id)}
+                              >
+                                Enable
+                              </AlertDialogAction>
+                            ) : (
+                              <AlertDialogAction
+                                className="bg-red-500 text-white"
+                                onClick={() => onChangeStatus(patient.id)}
+                              >
                                 Disable
-                              </AlertDialogAction>)}
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                }
+                              </AlertDialogAction>
+                            )}
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </CardContent>
@@ -164,7 +263,8 @@ const Patient = () => {
 
 export default Patient;
 
-{/* <TableRow className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+// {
+/* <TableRow className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
   <TableCell>
     <Link href="#">INV001</Link>
   </TableCell>
@@ -211,4 +311,5 @@ export default Patient;
       <span className="sr-only">Details</span>
     </Button>
   </TableCell>
-</TableRow> */}
+</TableRow> */
+// }
